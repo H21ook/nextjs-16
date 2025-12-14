@@ -31,8 +31,8 @@ export async function coreFetcher<T, TBody = undefined>(
     });
 
     if (!res.ok) {
-      const text = await res.text();
-      return { isOk: false, error: text || `Error ${res.status}`, status: res.status };
+      const json = await res.json();
+      return { isOk: false, error: json?.error || `Error ${res.status}`, status: res.status };
     }
 
     const json = await res.json();
