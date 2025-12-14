@@ -4,8 +4,8 @@ import { cookies } from "next/headers";
 import { serverFetcher } from "./fetcher/serverFetcher";
 import { redirect } from "next/navigation";
 
-export const ACCESS_TOKEN_KEY = "access_token";
-export const REFRESH_TOKEN_KEY = "refresh_token";
+const ACCESS_TOKEN_KEY = "access_token";
+const REFRESH_TOKEN_KEY = "refresh_token";
 
 export async function setTokens(access: string, refresh: string) {
   const cookie = await cookies();
@@ -62,4 +62,9 @@ export async function getAccessToken() {
     return response.data.accessToken;
   }
   return accessToken;
+}
+
+export const getRefreshToken = async () => {
+  const cookie = await cookies();
+  return cookie.get(REFRESH_TOKEN_KEY)?.value;
 }

@@ -32,7 +32,7 @@ export async function coreFetcher<T, TBody = undefined>(
 
     if (!res.ok) {
       const text = await res.text();
-      return { isOk: false, error: text || `Error ${res.status}` };
+      return { isOk: false, error: text || `Error ${res.status}`, status: res.status };
     }
 
     const json = await res.json();
@@ -46,6 +46,7 @@ export async function coreFetcher<T, TBody = undefined>(
     return {
       isOk: false,
       error: errorMessage,
+      status: 500
     };
   }
 }

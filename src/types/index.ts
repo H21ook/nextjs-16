@@ -1,13 +1,3 @@
-export type FakeResponse<T> =
-  | {
-      ok: true;
-      data: T;
-    }
-  | {
-      ok: false;
-      error?: string;
-    };
-
 type CustomSuccessResponse<
   T = {
     isOk: true;
@@ -20,6 +10,7 @@ type CustomSuccessResponse<
 type CustomErrorResponse = {
   isOk: false;
   error?: string;
+  status?: number;
 };
 
 export type CustomResponse<T> = CustomSuccessResponse<T> | CustomErrorResponse;
