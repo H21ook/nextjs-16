@@ -25,6 +25,8 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "
 import { IconEye, IconEyeOff } from "@tabler/icons-react"
 import { useState } from "react"
 import Link from "next/link"
+import { clientFetcher } from "@/lib/fetcher/clientFetcher"
+import { LoginResponse } from "@/types/auth-types"
 
 
 export function LoginForm({
@@ -44,16 +46,13 @@ export function LoginForm({
     const onSubmit = async (data: LoginSchema) => {
         try {
             setErrorMessage(null);
-            let isError = true;
-            let accessToken = "";
-            console.log("Login form data: ", data)
-
-            if (isError) {
-                setErrorMessage("Invalid email or password");
+            const response = await clientFetcher.post<LoginResponse, LoginSchema>("/internal/auth/login", data);
+            if (!response.isOk) {
+                setErrorMessage(response?.error || "Invalid email or password");
                 return;
             }
 
-            store.dispatch(setAccessToken(accessToken));
+            store.dispatch(setAccessToken(response.data.accessToken));
             window.location.href = "/";
         } catch (error) {
             console.error("Login failed", error)
