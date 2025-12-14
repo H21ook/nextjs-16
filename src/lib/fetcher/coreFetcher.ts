@@ -46,7 +46,7 @@ export async function coreFetcher<T, TBody = undefined>(
     return {
       isOk: false,
       error: errorMessage,
-      status: 500,
+      status: 500
     };
   }
 }
