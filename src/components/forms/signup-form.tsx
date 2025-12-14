@@ -21,9 +21,10 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { signupSchema, type SignupSchema } from "@/lib/schema/auth-schema"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "../ui/input-group"
 import { IconEye, IconEyeOff } from "@tabler/icons-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
+import { createClient } from "@/lib/supabase/client"
 
 
 export function SignupForm({
@@ -35,25 +36,40 @@ export function SignupForm({
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors, isSubmitting },
     } = useForm<SignupSchema>({
         resolver: zodResolver(signupSchema),
     })
 
+    useEffect(() => {
+        const fetchAuth = async () => {
+            const supabase = createClient();
+            const response = await supabase.auth.getUser()
+            const claims = await supabase.auth.getClaims()
+            console.log("response", response, claims)
+        }
+        fetchAuth()
+    }, [])
+
     const onSubmit = async (data: SignupSchema) => {
         try {
             setErrorMessage(null);
-            console.log("Signup form data: ", data)
-            let isError = true;
+            const supabase = createClient();
+
+            const { data: signUpData, error } = await supabase.auth.signUp({
+                email: data.email,
+                password: data.password
+            });
 
             // error
-            if (isError) {
-                setErrorMessage("Something went wrong. Please try again later.");
+            if (error) {
+                setErrorMessage(error.message);
                 return;
             }
             // success
             toast.success("Signup successful. Please check your email for the verification link.");
-            window.location.href = "/auth/login";
+            reset();
         } catch (error) {
             console.error("Signup failed", error)
             setErrorMessage("Something went wrong. Please try again later.");

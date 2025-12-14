@@ -25,6 +25,7 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "
 import { IconEye, IconEyeOff } from "@tabler/icons-react"
 import { useState } from "react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
 
 
 export function LoginForm({
@@ -44,16 +45,20 @@ export function LoginForm({
     const onSubmit = async (data: LoginSchema) => {
         try {
             setErrorMessage(null);
-            let isError = true;
-            let accessToken = "";
-            console.log("Login form data: ", data)
 
-            if (isError) {
+            const supabase = createClient();
+
+            const { data: loggedData, error } = await supabase.auth.signInWithPassword({
+                email: data.email,
+                password: data.password,
+            });
+
+            if (error) {
                 setErrorMessage("Invalid email or password");
                 return;
             }
 
-            store.dispatch(setAccessToken(accessToken));
+            store.dispatch(setAccessToken(loggedData.session.access_token));
             window.location.href = "/";
         } catch (error) {
             console.error("Login failed", error)
