@@ -35,16 +35,26 @@ export function SignupForm({
     const {
         register,
         handleSubmit,
+        watch,
+        setError,
         formState: { errors, isSubmitting },
     } = useForm<SignupSchema>({
         resolver: zodResolver(signupSchema),
     })
 
+    const passwordValue = watch("password");
     const onSubmit = async (data: SignupSchema) => {
         try {
             setErrorMessage(null);
             console.log("Signup form data: ", data)
             let isError = true;
+
+            if (data.password !== data.confirmPassword) {
+                setError("confirmPassword", {
+                    type: "manual",
+                    message: "Passwords do not match",
+                });
+            }
 
             // error
             if (isError) {
@@ -80,6 +90,7 @@ export function SignupForm({
                                     placeholder="Enter your email"
                                     required
                                     {...register("email")}
+                                    aria-invalid={errors.email ? true : false}
                                 />
                                 {errors.email && (
                                     <FieldDescription className="text-destructive">
@@ -93,7 +104,12 @@ export function SignupForm({
                                     <FieldLabel htmlFor="password">Password</FieldLabel>
                                 </div>
                                 <InputGroup>
-                                    <InputGroupInput id="password" placeholder="Enter your password" type={showPassword ? "text" : "password"} {...register("password")} aria-invalid={errors.password ? true : false} />
+                                    <InputGroupInput id="password"
+                                        placeholder="Enter your password"
+                                        type={showPassword ? "text" : "password"}
+                                        {...register("password")}
+                                        aria-invalid={errors.password ? true : false}
+                                    />
                                     <InputGroupAddon align="inline-end">
                                         <InputGroupButton
                                             aria-label="Show Password"
@@ -119,7 +135,20 @@ export function SignupForm({
                                     <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
                                 </div>
                                 <InputGroup>
-                                    <InputGroupInput id="confirm-password" placeholder="Confirm your password" type={showPassword ? "text" : "password"} {...register("confirmPassword")} aria-invalid={errors.confirmPassword ? true : false} />
+                                    <InputGroupInput
+                                        id="confirm-password"
+                                        placeholder="Confirm your password"
+                                        type={showPassword ? "text" : "password"}
+                                        {...register("confirmPassword", {
+                                            validate: (value) => {
+                                                if (value !== passwordValue) {
+                                                    return "Passwords do not match";
+                                                }
+                                                return true;
+                                            }
+                                        })}
+                                        aria-invalid={errors.confirmPassword ? true : false}
+                                    />
                                     <InputGroupAddon align="inline-end">
                                         <InputGroupButton
                                             aria-label="Show Password"

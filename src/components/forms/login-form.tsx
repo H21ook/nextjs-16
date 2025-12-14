@@ -81,6 +81,7 @@ export function LoginForm({
                                     placeholder="Enter your email"
                                     required
                                     {...register("email")}
+                                    aria-invalid={errors.email ? true : false}
                                 />
                                 {errors.email && (
                                     <FieldDescription className="text-destructive">
@@ -100,7 +101,13 @@ export function LoginForm({
                                     </a>
                                 </div>
                                 <InputGroup>
-                                    <InputGroupInput id="password" placeholder="Enter your password" type={showPassword ? "text" : "password"} {...register("password")} aria-invalid={errors.password ? true : false} />
+                                    <InputGroupInput
+                                        id="password"
+                                        placeholder="Enter your password"
+                                        type={showPassword ? "text" : "password"}
+                                        {...register("password")}
+                                        aria-invalid={errors.password ? true : false}
+                                    />
                                     <InputGroupAddon align="inline-end">
                                         <InputGroupButton
                                             aria-label="Show Password"
