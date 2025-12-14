@@ -1,59 +1,79 @@
 import { CustomResponse } from "@/types";
 import { coreFetcher, CoreFetcherOptions } from "./coreFetcher";
+import { refreshAccessToken } from "../client-requests";
 
-const responseHandler = <T>(res: CustomResponse<T>) => {
-  if (!res.isOk && res?.status === 401 && !window.location.pathname?.startsWith("/auth")) {
-    window.location.href = "/auth/login"
+function handleAuthFailure<T>(res: CustomResponse<T>) {
+  if (
+    !res.isOk &&
+    res.status === 401 &&
+    !window.location.pathname.startsWith("/auth")
+  ) {
+    window.location.href = "/auth/login";
+  }
+  return res;
+}
+
+async function withRefresh<T, TBody>(
+  method: any,
+  url: string,
+  body: TBody | undefined,
+  token?: string,
+  options?: Omit<CoreFetcherOptions, "token">,
+  isRetry = false
+): Promise<CustomResponse<T>> {
+  const res = await coreFetcher<T, TBody>(method, url, body, {
+    ...options,
+    token,
+  });
+
+  if (!res.isOk && res.status === 401 && !isRetry) {
+    const newToken = await refreshAccessToken();
+    if (!newToken) return handleAuthFailure(res);
+
+    return withRefresh(
+      method,
+      url,
+      body,
+      newToken,
+      options,
+      true
+    );
   }
 
-  return res
+  return handleAuthFailure(res);
 }
+
 export const clientFetcher = {
   get: async <T>(
     url: string,
     token?: string,
     options?: Omit<CoreFetcherOptions, "token">
-  ) => {
-    const res = await coreFetcher<T>("GET", url, undefined, { ...options, token })
-    return responseHandler(res)
-  },
+  ) => withRefresh<T, undefined>("GET", url, undefined, token, options),
 
-  post: async <T, TBody = undefined>(
+  post: async<T, TBody = undefined>(
     url: string,
     data?: TBody,
     token?: string,
     options?: Omit<CoreFetcherOptions, "token">
-  ) => {
-    const res = await coreFetcher<T, TBody>("POST", url, data, { ...options, token })
-    return responseHandler(res)
-  },
+  ) => withRefresh<T, TBody>("POST", url, data, token, options),
 
   put: async <T, TBody = undefined>(
     url: string,
     data?: TBody,
     token?: string,
     options?: Omit<CoreFetcherOptions, "token">
-  ) => {
-    const res = await coreFetcher<T, TBody>("PUT", url, data, { ...options, token })
-    return responseHandler(res)
-  },
+  ) => withRefresh<T, TBody>("PUT", url, data, token, options),
 
   patch: async <T, TBody = undefined>(
     url: string,
     data?: TBody,
     token?: string,
     options?: Omit<CoreFetcherOptions, "token">
-  ) => {
-    const res = await coreFetcher<T, TBody>("PATCH", url, data, { ...options, token })
-    return responseHandler(res)
-  },
+  ) => withRefresh<T, TBody>("PATCH", url, data, token, options),
 
   delete: async <T>(
     url: string,
     token?: string,
     options?: Omit<CoreFetcherOptions, "token">
-  ) => {
-    const res = await coreFetcher<T>("DELETE", url, undefined, { ...options, token })
-    return responseHandler(res)
-  },
+  ) => withRefresh<T, undefined>("DELETE", url, undefined, token, options),
 };
