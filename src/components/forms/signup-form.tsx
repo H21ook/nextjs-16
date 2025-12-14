@@ -37,21 +37,14 @@ export function SignupForm({
         register,
         handleSubmit,
         reset,
+        watch,
+        setError,
         formState: { errors, isSubmitting },
     } = useForm<SignupSchema>({
         resolver: zodResolver(signupSchema),
     })
 
-    useEffect(() => {
-        const fetchAuth = async () => {
-            const supabase = createClient();
-            const response = await supabase.auth.getUser()
-            const claims = await supabase.auth.getClaims()
-            console.log("response", response, claims)
-        }
-        fetchAuth()
-    }, [])
-
+    const passwordValue = watch("password");
     const onSubmit = async (data: SignupSchema) => {
         try {
             setErrorMessage(null);
@@ -61,6 +54,13 @@ export function SignupForm({
                 email: data.email,
                 password: data.password
             });
+
+            if (data.password !== data.confirmPassword) {
+                setError("confirmPassword", {
+                    type: "manual",
+                    message: "Passwords do not match",
+                });
+            }
 
             // error
             if (error) {
@@ -96,6 +96,7 @@ export function SignupForm({
                                     placeholder="Enter your email"
                                     required
                                     {...register("email")}
+                                    aria-invalid={errors.email ? true : false}
                                 />
                                 {errors.email && (
                                     <FieldDescription className="text-destructive">
@@ -109,7 +110,12 @@ export function SignupForm({
                                     <FieldLabel htmlFor="password">Password</FieldLabel>
                                 </div>
                                 <InputGroup>
-                                    <InputGroupInput id="password" placeholder="Enter your password" type={showPassword ? "text" : "password"} {...register("password")} aria-invalid={errors.password ? true : false} />
+                                    <InputGroupInput id="password"
+                                        placeholder="Enter your password"
+                                        type={showPassword ? "text" : "password"}
+                                        {...register("password")}
+                                        aria-invalid={errors.password ? true : false}
+                                    />
                                     <InputGroupAddon align="inline-end">
                                         <InputGroupButton
                                             aria-label="Show Password"
@@ -135,7 +141,20 @@ export function SignupForm({
                                     <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
                                 </div>
                                 <InputGroup>
-                                    <InputGroupInput id="confirm-password" placeholder="Confirm your password" type={showPassword ? "text" : "password"} {...register("confirmPassword")} aria-invalid={errors.confirmPassword ? true : false} />
+                                    <InputGroupInput
+                                        id="confirm-password"
+                                        placeholder="Confirm your password"
+                                        type={showPassword ? "text" : "password"}
+                                        {...register("confirmPassword", {
+                                            validate: (value) => {
+                                                if (value !== passwordValue) {
+                                                    return "Passwords do not match";
+                                                }
+                                                return true;
+                                            }
+                                        })}
+                                        aria-invalid={errors.confirmPassword ? true : false}
+                                    />
                                     <InputGroupAddon align="inline-end">
                                         <InputGroupButton
                                             aria-label="Show Password"
