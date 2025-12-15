@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getRefreshToken, setTokens } from "@/lib/tokens";
 
 export async function POST() {
-  let res: { accessToken: string; refreshToken: string } | { error?: string };
+  //   let res: { accessToken: string; refreshToken: string } | { error?: string };
 
   const refreshTokenStore = await getRefreshToken();
 
@@ -13,7 +13,7 @@ export async function POST() {
     );
   }
 
-  res = {
+  const res = {
     accessToken: `access_token_${Date.now()}`,
     refreshToken: "refresh_token",
   };

@@ -1,5 +1,5 @@
 import { CustomResponse } from "@/types";
-import { coreFetcher, CoreFetcherOptions } from "./coreFetcher";
+import { coreFetcher, CoreFetcherOptions, HttpMethod } from "./coreFetcher";
 import { refreshAccessToken } from "../client-requests";
 
 function handleAuthFailure<T>(res: CustomResponse<T>) {
@@ -14,7 +14,7 @@ function handleAuthFailure<T>(res: CustomResponse<T>) {
 }
 
 async function withRefresh<T, TBody>(
-  method: any,
+  method: HttpMethod,
   url: string,
   body: TBody | undefined,
   token?: string,
@@ -30,14 +30,7 @@ async function withRefresh<T, TBody>(
     const newToken = await refreshAccessToken();
     if (!newToken) return handleAuthFailure(res);
 
-    return withRefresh(
-      method,
-      url,
-      body,
-      newToken,
-      options,
-      true
-    );
+    return withRefresh(method, url, body, newToken, options, true);
   }
 
   return handleAuthFailure(res);
@@ -50,7 +43,7 @@ export const clientFetcher = {
     options?: Omit<CoreFetcherOptions, "token">
   ) => withRefresh<T, undefined>("GET", url, undefined, token, options),
 
-  post: async<T, TBody = undefined>(
+  post: async <T, TBody = undefined>(
     url: string,
     data?: TBody,
     token?: string,
