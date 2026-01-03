@@ -4,6 +4,10 @@ export interface LoginResponse {
     refreshToken: string;
 }
 
+export interface RefreshResponse {
+    accessToken: string;
+}
+
 export enum AuthStatus {
     UNKNOWN = "unknown",
     AUTHENTICATED = "authenticated",

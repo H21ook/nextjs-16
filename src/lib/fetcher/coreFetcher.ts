@@ -30,9 +30,20 @@ export async function coreFetcher<T, TBody = undefined>(
       body: body ? JSON.stringify(body) : undefined,
     });
 
+    const status = res.status;
+
     if (!res.ok) {
-      const json = await res.json();
-      return { isOk: false, error: json?.error || `Error ${res.status}`, status: res.status };
+      let error: string | undefined;
+      try {
+        const json = await res.json();
+        error = json?.error;
+      } catch { }
+
+      return {
+        isOk: false,
+        status,
+        error: error ?? `HTTP ${status}`,
+      };
     }
 
     const json = await res.json();
